@@ -8,7 +8,6 @@ stages:
     workDir: ~/easy-money
     environment:
       - CIRCLE_PROJECT_REPONAME: easy-money
-      - HEROKU_DEBUG: 1
     steps:
       - type: checkout
       - type: cache-restore
