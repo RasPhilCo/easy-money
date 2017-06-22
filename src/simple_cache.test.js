@@ -56,6 +56,7 @@ describe('Cache.fetch()', () => {
     })
 
     test('it updates the cache', async () => {
+      expect.assertions(1)
       // let cache finish writing
       await wait(1000).then(() => {
         expect(fs.readJSONSync(cache)).toEqual(USERS)
