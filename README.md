@@ -5,8 +5,8 @@ A simple caching service
 
 `EasyMoney.fetch` will perform one of the following:
  - on valid cache: return the cache
- - on empty cache: return the JSON value of a function and then asynchronously cache that JSON
- - on stale cache: return the stale cache and asynchronously update the cache with new JSON from a function
+ - on empty cache: return the JSON returned from a function and then asynchronously cache that JSON
+ - on stale cache: return the stale cache and then asynchronously update the cache with the returned JSON from a function
 
 ```js
 const cache = require('easy-money')
