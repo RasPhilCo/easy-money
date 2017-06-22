@@ -1,0 +1,31 @@
+---
+version: 2
+executorType: docker
+containerInfo:
+  - image: dickeyxxx/cli-engine:latest
+stages:
+  build:
+    workDir: ~/easy-money
+    environment:
+      - CIRCLE_PROJECT_REPONAME: easy-money
+      - HEROKU_DEBUG: 1
+    steps:
+      - type: checkout
+      - type: cache-restore
+        key: easy-money-{{checksum "package.json"}}
+      - type: shell
+        command: |
+          set -exu
+
+          yarn --prefer-offline --pure-lockfile
+          ./node_modules/.bin/jest -i
+          ./node_modules/.bin/flow check
+          ./node_modules/.bin/standard
+          yarn run prepare
+
+      - type: test-results-store
+        path: /tmp/test-results
+      - type: cache-save
+        key: easy-money-{{checksum "package.json"}}
+        paths:
+          - /usr/local/share/.cache/yarn

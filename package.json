@@ -5,8 +5,8 @@
   "author": "Philipe Navarro @rasphilco",
   "bugs": "https://github.com/rasphilco/easy-money/issues",
   "dependencies": {
-    "moment": "2.x",
-    "fs-extra": "3.x"
+    "fs-extra": "3.x",
+    "moment": "^2.18.1"
   },
   "devDependencies": {
     "babel-cli": "6.24.1",
@@ -50,7 +50,7 @@
     "clean": "rimraf lib",
     "copy-flow": "flow-copy-source -v -i '*.test.js' src lib",
     "prepare": "npm run clean && npm run build && npm run copy-flow",
-    "test": "jest && flow && standard",
+    "test": "jest -i && flow && standard",
     "watch": "babel --watch src -d lib --ignore '*.test.js'"
   },
   "standard": {

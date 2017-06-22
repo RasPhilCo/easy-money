@@ -1,0 +1,13 @@
+[ignore]
+<PROJECT_ROOT>/lib/.*
+.*/node_modules/*
+<PROJECT_ROOT>/vendor/*
+
+[include]
+
+[libs]
+flow-typed
+
+[options]
+emoji=true
+unsafe.enable_getters_and_setters=true
