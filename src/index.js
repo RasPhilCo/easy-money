@@ -3,6 +3,11 @@
 import fs from 'fs-extra'
 import moment from 'moment'
 
+type CacheOptions = {
+  cacheDuration: number,
+  cacheFn: () => Promise<Array<any>>
+}
+
 /**
  * Utility for caching to disk
  * @class
@@ -11,36 +16,51 @@ export default class SimpleCache {
   /**
    * gets or makes values for a cache
    * @param {string} cachePath - cache path
-   * @param {number} cacheDuration - cache validity in seconds
-   * @param {any} cacheFn - function, returns json to cache
+   * @param {Object} options - cache builder/invalidator
+   * @param {number} options.cacheDuration - cache validity in seconds
+   * @param {cacheFunction} options.cacheFn - returns Promise<Array<any> to cache
    * @example
    * ```js
    * const cache = require('easy-money')
-   * await cache.fetch('/path/to/cache', 3600, cacheFn)
+   * await cache.fetch('/path/to/cache', {cacheDuration: 3600, cacheFn: cacheFn})
    * ```
    */
-  static async fetch (cachePath: string, cacheDuration: ?number, cacheFn: any): Promise<?Array<?string>> {
-    let cache
+  static async fetch (cachePath: string, cacheOptions: CacheOptions): Promise<Array<any>> {
+    let {cacheDuration, cacheFn} = cacheOptions
     let cachePresent = await fs.exists(cachePath)
     if (cachePresent) {
-      cache = await fs.readJSON(cachePath)
-      if (this._isStale(cachePath, cacheDuration)) this._updateCache(cachePath, cacheFn)
+      const cache = await fs.readJSON(cachePath)
+      // // TODO: aysnc fork
+      await this._fork('checkStale', {cachePath, cacheDuration, cacheFn})
+      // // end async
       return cache
+    } else {
+      const updatedCache = await cacheFn()
+      // TODO: aysnc fork
+      await this._fork('update', {cachePath, cache: updatedCache})
+      // end async
+      return updatedCache
     }
-    let cacheValues = await this._updateCache(cachePath, cacheFn)
-    return cacheValues
   }
 
-  static async _updateCache (cachePath: string, cacheFn: any): Promise<?Array<?string>> {
-    if (!cacheFn) return
+  static async _fork (action: string, cacheOptions: any) {
+    let {cachePath, cacheDuration, cacheFn, cache} = cacheOptions
+    if (action === 'update') {
+      await this._updateCache(cachePath, cache)
+    } else {
+      if (this._isStale(cachePath, cacheDuration)) {
+        const updatedCache = await cacheFn()
+        await this._updateCache(cachePath, updatedCache)
+      }
+    }
+  }
+
+  static async _updateCache (cachePath: string, cache: any) {
     await fs.ensureFile(cachePath)
-    let cache = await cacheFn()
-    fs.writeJSON(cachePath, cache)
-    return cache
+    await fs.writeJSON(cachePath, cache)
   }
 
-  static _isStale (cachePath: string, cacheDuration: ?number): boolean {
-    if (!cacheDuration) return false
+  static _isStale (cachePath: string, cacheDuration: number): boolean {
     return this._mtime(cachePath).isBefore(moment().subtract(cacheDuration, 'seconds'))
   }
 

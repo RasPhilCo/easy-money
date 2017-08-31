@@ -7,11 +7,11 @@ import tmp from 'tmp'
 import Cache from './index'
 
 let cacheDir
-let cache
+let cachePath
 beforeAll(() => {
   var tmpobj = tmp.dirSync()
   cacheDir = tmpobj.name
-  cache = path.join(cacheDir, 'users')
+  cachePath = path.join(cacheDir, 'users')
 })
 
 afterAll(() => {
@@ -19,13 +19,13 @@ afterAll(() => {
 })
 
 const USERS = [
-  {id: 1, name: 'foo'},
-  {id: 2, name: 'bar'}
+  {id: 1, name: 'foo old'},
+  {id: 2, name: 'bar old'}
 ]
 
 const UPDATED_USERS = [
-  {id: 1, name: 'baz'},
-  {id: 2, name: 'qux'}
+  {id: 1, name: 'baz new'},
+  {id: 2, name: 'qux new'}
 ]
 
 async function getUsers () {
@@ -36,7 +36,11 @@ async function getUpdatedUsers () {
   return UPDATED_USERS
 }
 
-// courtesy @dickeyxxx
+async function emptyCache () {
+  return []
+}
+
+// courtesy @jdxcode
 function wait (ms: number) {
   return new Promise(resolve => {
     setTimeout(resolve, ms)
@@ -48,7 +52,7 @@ describe('Cache.fetch()', () => {
     let users
 
     beforeAll(async () => {
-      users = await Cache.fetch(cache, 3600, getUsers)
+      users = await Cache.fetch(cachePath, {cacheDuration: 3600, cacheFn: getUsers})
     })
 
     test('it returns from cache function', () => {
@@ -59,32 +63,51 @@ describe('Cache.fetch()', () => {
       expect.assertions(1)
       // let cache finish writing
       await wait(1000).then(() => {
-        expect(fs.readJSONSync(cache)).toEqual(USERS)
+        expect(fs.readJSONSync(cachePath)).toEqual(USERS)
       })
     })
   })
 
-  test('it returns on valid cache', async () => {
-    let users = await Cache.fetch(cache, 3600, function () {})
-    expect(users).toEqual(USERS)
-  })
-
-  describe('on stale cache', () => {
-    let users
-
+  describe('on preset', () => {
     beforeAll(async () => {
-      users = await Cache.fetch(cache, 1, getUpdatedUsers)
+      // populate cache
+      await fs.writeJSON(cachePath, USERS)
     })
 
-    test('it returns from cache', () => {
-      expect(users).toEqual(USERS)
+    describe('valid cache', () => {
+      let users
+
+      beforeAll(async () => {
+        users = await Cache.fetch(cachePath, {cacheDuration: 3600, cacheFn: emptyCache})
+      })
+
+      test('it returns the cache', async () => {
+        expect(users).toEqual(USERS)
+      })
+
+      test('it does not update the cache', async () => {
+        expect.assertions(1)
+        expect(fs.readJSONSync(cachePath)).toEqual(USERS)
+      })
     })
 
-    test('it updates the cache', async () => {
-      expect.assertions(1)
-      // let cache finish writing
-      await wait(1000).then(() => {
-        expect(fs.readJSONSync(cache)).toEqual(UPDATED_USERS)
+    describe('stale cache', () => {
+      let users
+
+      beforeAll(async () => {
+        users = await Cache.fetch(cachePath, {cacheDuration: 0, cacheFn: getUpdatedUsers})
+      })
+
+      test('it returns the stale cache', async () => {
+        expect(users).toEqual(USERS)
+      })
+
+      test('it updates the cache', async () => {
+        expect.assertions(1)
+        // let cache finish writing
+        await wait(1000).then(() => {
+          expect(fs.readJSONSync(cachePath)).toEqual(UPDATED_USERS)
+        })
       })
     })
   })
