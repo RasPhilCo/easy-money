@@ -4,19 +4,28 @@ easy-money
 A simple caching service
 
 `EasyMoney.fetch` will perform one of the following:
- - on valid cache: return the cache
- - on empty cache: return the JSON returned from a function and then asynchronously cache that JSON
- - on stale cache: return the stale cache and then asynchronously update the cache with the returned JSON from a function
+ - on empty cache
+  - return JSON from a caching function
+  - asynchronously save JSON/cache
+ - on present
+  - valid cache:
+    - return the cache
+  - stale cache
+    - return the stale cache
+    - asynchronously call and save new JSON/cache from a caching function
 
 ```js
 const cache = require('easy-money')
 
-function cacheFn () {
-  // call to api for users
-  return get('/users')
+const cacheOptions = {
+  // cache lifespan in seconds
+  cacheDuration: 3600,
+  // a function that returns JSON to cache
+  cacheFn : async function () {
+    // call to api for users
+    return https.get('/users')
+  }
 }
 
-// specify a path to cache, a cache lifespan in seconds
-// and a function that returns JSON to cache
-await cache.fetch('/path/to/cache', 3600, cacheFn)
+await cache.fetch('/path/to/cache', cacheOptions)
 ```
