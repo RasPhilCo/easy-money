@@ -1,0 +1,30 @@
+---
+version: 2
+executorType: docker
+containerInfo:
+  - image: dickeyxxx/cli-engine-docker:v1.2.0-node7
+stages:
+  build:
+    workDir: ~/easy-money
+    environment:
+      - CIRCLE_PROJECT_REPONAME: easy-money
+    steps:
+      - type: checkout
+      - type: cache-restore
+        key: easy-money-{{checksum "package.json"}}
+      - type: shell
+        command: |
+          set -exu
+
+          yarn --prefer-offline --pure-lockfile
+          ./node_modules/.bin/jest --coverage --runInBand && bash <(curl -s https://codecov.io/bash) -s coverage
+          ./node_modules/.bin/flow check
+          ./node_modules/.bin/standard
+          yarn run prepare
+
+      - type: test-results-store
+        path: /tmp/test-results
+      - type: cache-save
+        key: easy-money-{{checksum "package.json"}}
+        paths:
+          - /usr/local/share/.cache/yarn
