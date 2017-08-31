@@ -30,15 +30,15 @@ export default class SimpleCache {
     let cachePresent = await fs.exists(cachePath)
     if (cachePresent) {
       const cache = await fs.readJSON(cachePath)
-      // // TODO: aysnc fork
-      await this._fork('checkStale', {cachePath, cacheDuration, cacheFn})
-      // // end async
+      // aysnc fork
+      this._fork('updateIfStale', {cachePath, cacheDuration, cacheFn})
+      // end async
       return cache
     } else {
       const updatedCache = await cacheFn()
-      // TODO: aysnc fork
-      await this._fork('update', {cachePath, cache: updatedCache})
-      // end async
+      // aysnc fork
+      this._fork('update', {cachePath, cache: updatedCache})
+      // async
       return updatedCache
     }
   }
