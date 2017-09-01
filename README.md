@@ -5,14 +5,14 @@ A simple asynchronous caching to disk service
 
 `EasyMoney.fetch` will perform one of the following:
  - on empty cache
-  - return JSON from a caching function
-  - asynchronously save JSON/cache
+   - return JSON from a caching function
+   - asynchronously save JSON/cache
  - on present
-  - valid cache:
-    - return the cache
-  - stale cache
-    - return the stale cache
-    - asynchronously call and save new JSON/cache from a caching function
+   - valid cache:
+     - return the cache
+   - stale cache
+     - return the stale cache
+     - asynchronously call and save new JSON/cache from a caching function
 
 ```js
 const cache = require('easy-money')
