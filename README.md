@@ -1,7 +1,7 @@
 easy-money
 ---
 
-A simple caching service
+A simple asynchronous caching to disk service
 
 `EasyMoney.fetch` will perform one of the following:
  - on empty cache
@@ -17,7 +17,7 @@ A simple caching service
 ```js
 const cache = require('easy-money')
 
-const cacheOptions = {
+const cacheParams = {
   // cache lifespan in seconds
   cacheDuration: 3600,
   // a function that returns JSON to cache
@@ -27,5 +27,5 @@ const cacheOptions = {
   }
 }
 
-await cache.fetch('/path/to/cache', cacheOptions)
+await cache.fetch('/path/to/cache', cacheParams)
 ```

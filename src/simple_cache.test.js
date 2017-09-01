@@ -95,7 +95,11 @@ describe('Cache.fetch()', () => {
       let users
 
       beforeAll(async () => {
-        users = await Cache.fetch(cachePath, {cacheDuration: 0, cacheFn: getUpdatedUsers})
+        await fs.writeJSON(cachePath, USERS)
+        // allow cache to stale
+        await wait(1000).then(async () => {
+          users = await Cache.fetch(cachePath, {cacheDuration: 1, cacheFn: getUpdatedUsers})
+        })
       })
 
       test('it returns the stale cache', async () => {

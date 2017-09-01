@@ -1,6 +1,6 @@
 {
   "name": "easy-money",
-  "description": "a simple cache on disk",
+  "description": "a simple asynchronous caching to disk service",
   "version": "0.0.0",
   "author": "Philipe Navarro @rasphilco",
   "bugs": "https://github.com/rasphilco/easy-money/issues",

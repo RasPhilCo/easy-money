@@ -8,6 +8,13 @@ type CacheOptions = {
   cacheFn: () => Promise<Array<any>>
 }
 
+type ForkOptions = {
+  cache?: Array<any>,
+  cachePath: string,
+  cacheDuration?: number,
+  cacheFn?: () => Promise<Array<any>>
+}
+
 /**
  * Utility for caching to disk
  * @class
@@ -43,13 +50,13 @@ export default class SimpleCache {
     }
   }
 
-  static async _fork (action: string, cacheOptions: any) {
+  static async _fork (action: string, cacheOptions: ForkOptions) {
     let {cachePath, cacheDuration, cacheFn, cache} = cacheOptions
     if (action === 'update') {
       await this._updateCache(cachePath, cache)
     } else {
-      if (this._isStale(cachePath, cacheDuration)) {
-        const updatedCache = await cacheFn()
+      if (this._isStale(cachePath, cacheDuration || 0)) {
+        const updatedCache = cacheFn ? await cacheFn() : []
         await this._updateCache(cachePath, updatedCache)
       }
     }
@@ -61,6 +68,7 @@ export default class SimpleCache {
   }
 
   static _isStale (cachePath: string, cacheDuration: number): boolean {
+    if (!cacheDuration) return false
     return this._mtime(cachePath).isBefore(moment().subtract(cacheDuration, 'seconds'))
   }
 
