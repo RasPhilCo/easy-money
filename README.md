@@ -15,7 +15,8 @@ A simple asynchronous caching to disk service
      - asynchronously call and save new JSON/cache from a caching function
 
 ```js
-const cache = require('easy-money')
+// ES6
+import cache from 'easy-money'
 
 const cacheParams = {
   // cache lifespan in seconds
